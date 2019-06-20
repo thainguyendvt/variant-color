@@ -1,0 +1,69 @@
+{% assign has_similar_product = false %}
+{% for tag in product.tags %}
+{% if tag contains 'color-' %}
+{% assign has_similar_product = true %}
+{% endif %}
+{% endfor %}
+
+
+{% comment %}
+Set the extension of your color files below. Use 'png', 'jpeg', 'jpg' or 'gif'.
+{% endcomment %}
+
+{% assign file_extension = 'png' %}
+
+
+{% if has_similar_product %}
+<div class="swatch clearfix" data-option-index="{{ option_index }}">
+  <div class="header">Color: <span></span></div>
+  {% assign similar_products = '' %}
+  {% assign tempList = '' %}
+  {% for tag in product.tags %}
+  {% if tag contains 'color-' %}
+  {% assign similar_product_handle = tag | split: '--' | last %}
+  {% assign similar_product_name = tag | split: 'color-' | last | split: '--' | first %}
+  {% capture tempList %}
+  {{similar_products | append: similar_product_handle | append: ' ' }}
+  {% endcapture %}
+  {% assign similar_products = tempList %}
+
+  {% assign similar_products = similar_products | split:' ' %}
+
+  {% if has_similar_product %}
+  <div data-value="{{ similar_product_name | escape }}" class="swatch-element color {{ similar_product_name | handle }}">
+
+    <label class="change-color {% unless similar_product_handle contains 'current' or similar_product_handle contains 'Current' %}redirect {% else %}active{% endunless%}" data-name="{{ similar_product_name }}" {% unless similar_product_handle contains 'current' or similar_product_handle contains 'Current' %} data-value="{{ similar_product_handle }}"{% endunless %} for="swatch-{{ option_index }}-{{ similar_product_name | handle }}" style="background-color: {{ similar_product_name | split: ' ' | last | handle }}; background-image: url({{ similar_product_name | handle | append: '.' | append: file_extension | asset_url }})">
+    </label>
+
+  </div>
+  {% endif %}
+  {% endif %}
+  {% endfor %}
+
+</div>
+{% endif %}
+<script>
+  $(document).ready(function(){
+    {% for tag in product.tags %}
+    {% if tag contains 'color-' %}
+
+    $(function() {
+      $('.change-color.redirect').on('click', function() {
+        location.href = jQuery(this).data('value');
+      });
+      var title = $('.swatch .change-color.active').data('name');
+      $('.swatch .header span').text(title);
+      $('.swatch label').each(function() {
+        $(this).mouseenter(function() {
+          $('.swatch .header span').text($(this).data('name'));
+        })
+        $(this).mouseleave(function() {
+          $('.swatch .header span').text(title);
+        });
+      });
+    });
+    {% break %}
+    {% endif %}
+    {% endfor %}
+  });
+</script>
